@@ -31,13 +31,18 @@
                 <h3 class="modal-title">Настройки</h3>
             </template>
             <template v-slot:footer>
-              <select v-model="settings_list" @change="showChange">
+              <select v-model="settings_list" @change="getSettingsByFeeder">
                 <option v-for="feeder in feeders" v-bind:value="feeder" >{{ feeder.name }}</option>
               </select>
               <span>Размер порции</span><input v-model="size"/>
               <span>Часовой пояс</span><input v-model="timezone"/>
-              <span>Расписание</span><input v-model="schedule"/>
-              <button class="modal-footer__button">Отправить</button>
+              <span>Расписание</span><button @click="addTime()">+</button>
+                <div v-for="(schedule_item, index) in schedule">
+                  <div v-for="(item, item_index) in schedule_item">
+                    <input v-model="schedule_item[item_index]" :key="item_index">
+                  </div><button @click="deleteTime(index)">-</button>
+                </div>
+              <button class="modal-footer__button" @click="updateSettings(settings_list.id)">Отправить</button>
             </template>
         </modal-window>
         <ul class="list-group mt-4">
@@ -106,7 +111,7 @@
 
 <script>
 import axios from "axios";
-import ModalWindow from './modal-window.vue'
+import ModalWindow from './Modal.vue'
 export default {
   name: "Home",
   components: {
@@ -126,11 +131,21 @@ export default {
     };
   },
   methods: {
-    showChange(event) {
+    getSettingsByFeeder(event) {
+      //console.log(this.settings_list)
       this.size = this.settings_list.size
       this.timezone = this.settings_list.timezone
       this.schedule = this.settings_list.schedule
     },
+    async addTime() {
+                this.schedule.push([0, 0])
+                console.log(this.schedule)
+            },
+    async deleteTime(index) {
+                this.schedule.splice(index, 1)
+                
+                console.log(this.schedule)
+            },
     async showModalFeeder() {
                 this.$refs.modal_feeder.show = true
             },
@@ -149,7 +164,8 @@ export default {
     async getFeeders() {
       const response = await axios.post("http://localhost:8000/feeder/get_feeders_by_user",
       {
-        id: 1
+        access_token: localStorage.getItem('token'),
+        token_type: "bearer"
       });
       console.log(response.data);
       this.feeders = response.data;
@@ -157,7 +173,8 @@ export default {
     async getLitters() {
       const response = await axios.post("http://localhost:8000/litter/get_litters_by_user",
       {
-        id: 1
+        access_token: localStorage.getItem('token'),
+        token_type: "bearer"
       });
       console.log(response.data);
       this.litters = response.data;
@@ -213,7 +230,8 @@ export default {
           console.log(this.name);
           const response = await axios.post('http://localhost:8000/feeder/add_feeder', {
             name: this.name,
-            user_id: 1
+            access_token: localStorage.getItem('token'),
+            token_type: "bearer"
           });
     this.feeders.push(response.data);
     this.name = "";
@@ -221,13 +239,33 @@ export default {
           console.error(error);
         }
       },
-
+  async updateSettings(feeder_id) {
+        try {
+          console.log(feeder_id, parseInt(this.size), this.schedule, parseInt(this.timezone))
+          const response = await axios.post('http://localhost:8000/settings/update_settings', {
+          "id": feeder_id,
+          "size": parseInt(this.size),
+          "schedule": this.schedule,
+          "timezone": parseInt(this.timezone)
+          });
+          this.feeders.forEach((feeder, index) => {
+            if(feeder.id == feeder_id){
+              feeder.schedule = this.schedule
+              feeder.size = this.size
+              feeder.timezone = this.timezone
+            }
+          })
+        } catch (error) {
+          console.error(error);
+        }
+      },
   async addLitter() {
         try {
           console.log(this.name);
           const response = await axios.post('http://localhost:8000/litter/add_litter', {
             name: this.name,
-            user_id: 1
+            access_token: localStorage.getItem('token'),
+            token_type: "bearer"
           });
     this.litters.push(response.data);
     this.name = "";
