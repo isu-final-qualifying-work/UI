@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo2.png" width="125" height="125" />
-    <h1>PET HOME</h1>
+    <img alt="Vue logo" class="logo" src="@/assets/logo2.png" width="50" height="50" />
+    <h3>PET HOME</h3>
 
     <div class="wrapper">
 
       <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/login">Login</RouterLink>
-        <RouterLink to="/reg">Reg</RouterLink>
+        <RouterLink to="/">Главная</RouterLink>
+        <RouterLink to="/login">Вход</RouterLink>
+        <RouterLink to="/reg">Регистрация</RouterLink>
       </nav>
     </div>
   </header>
@@ -23,60 +22,51 @@ import HelloWorld from './components/HelloWorld.vue'
 
 <style scoped>
 
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color:rgb(219, 223, 221);
+  padding: 10px 20px;
+  color:#2c3e50;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 .logo {
-  display: block;
-  margin: 0 auto 2rem;
+  border-radius: 50%;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
 }
 
 nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+  display: flex;
+  gap: 15px;
 }
 
 nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+  text-decoration: none;
+  color: #2c3e50;
+  font-weight: bold;
+  padding: 8px 15px;
+  border-radius: 5px;
+  transition: background 0.3s;
 }
 
-nav a:first-of-type {
-  border: 0;
+nav a:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+nav a.router-link-exact-active {
+  background:#a9bdb9;
+  color: #2c3e50;
 }
+
 </style>

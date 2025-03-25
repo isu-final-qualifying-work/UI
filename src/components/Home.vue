@@ -1,113 +1,197 @@
 <template>
-<div>
-      <h3>Кормушки  
+  <div class="container">
+    <h3>Кормушки  
       <button class="btn btn-danger btn-sm" @click="showModalFeeder()">Новая кормушка</button>
       <button class="btn btn-danger btn-sm" @click="showModalFeederCollar()">Новый ошейник</button>
       <button class="btn btn-danger btn-sm" @click="showModalSettings()">Настроить кормушку</button>
-      </h3>
-        <modal-window ref="modal_feeder">
-            <template v-slot:title>
-                <h3 class="modal-title">Добавить кормушку</h3>
-            </template>
-            <template v-slot:footer>
-                <input v-model="name" placeholder="Имя" />
-                <button class="modal-footer__button" @click="addFeeder()">Отправить</button>
-            </template>
-        </modal-window>
-        <modal-window ref="modal_feeder_collar">
-            <template v-slot:title>
-                <h3 class="modal-title">Добавить ошейник</h3>
-            </template>
-            <template v-slot:footer>
-              <select v-model="feeder_name">
-                <option v-for="feeder in feeders" v-bind:value="feeder">{{ feeder.name }}</option>
-              </select>
-              <input v-model="name" placeholder="Имя" />
-              <button class="modal-footer__button" @click="addCollar('feeder', feeder_name.id)">Отправить</button>
-            </template>
-        </modal-window>
-        <modal-window ref="modal_settings">
-            <template v-slot:title>
-                <h3 class="modal-title">Настройки</h3>
-            </template>
-            <template v-slot:footer>
-              <select v-model="settings_list" @change="getSettingsByFeeder">
-                <option v-for="feeder in feeders" v-bind:value="feeder" >{{ feeder.name }}</option>
-              </select>
-              <span>Размер порции</span><input v-model="size"/>
-              <span>Часовой пояс</span><input v-model="timezone"/>
-              <span>Расписание</span><button @click="addTime()">+</button>
-                <div v-for="(schedule_item, index) in schedule">
-                  <div v-for="(item, item_index) in schedule_item">
-                    <input v-model="schedule_item[item_index]" :key="item_index">
-                  </div><button @click="deleteTime(index)">-</button>
-                </div>
-              <button class="modal-footer__button" @click="updateSettings(settings_list.id)">Отправить</button>
-            </template>
-        </modal-window>
-        <ul class="list-group mt-4">
-        <li v-for="feeder in feeders" :key="feeder.id" class="list-group-item d-flex justify-content-between align-items-center">
-          <span>
-            {{ feeder.name }}
-          </span>
-          <button @click="deleteFeeder(feeder.id)" class="btn btn-danger btn-sm">✖️</button>
-        <ul class="list-group mt-4">
-          <li v-for="collar in feeder.collars" :key="collar.id" class="list-group-item d-flex justify-content-between align-items-center">
-          <span>
-            {{ collar.name }}
-          </span>
-          <button @click="deleteCollar(collar.id, 'feeder')" class="btn btn-danger btn-sm">✖️</button>
-        </li>
-      </ul>
-        </li>
-      </ul>
-      
-</div>
+    </h3>
+    
+    <modal-window ref="modal_feeder">
+      <template v-slot:title>
+        <h3 class="modal-title">Добавить кормушку</h3>
+      </template>
+      <template v-slot:footer>
+        <input v-model="name" placeholder="Имя" class="input-field"/>
+        <button class="modal-footer__button" @click="addFeeder()">Отправить</button>
+      </template>
+    </modal-window>
+    
+    <modal-window ref="modal_feeder_collar">
+      <template v-slot:title>
+        <h3 class="modal-title">Добавить ошейник</h3>
+      </template>
+      <template v-slot:footer>
+        <select v-model="feeder_name" class="input-field">
+          <option v-for="feeder in feeders" v-bind:value="feeder">{{ feeder.name }}</option>
+        </select>
+        <input v-model="name" placeholder="Имя" class="input-field"/>
+        <button class="modal-footer__button" @click="addCollar('feeder', feeder_name.id)">Отправить</button>
+      </template>
+    </modal-window>
+    
+    <modal-window ref="modal_settings">
+      <template v-slot:title>
+        <h3 class="modal-title">Настройки</h3>
+      </template>
+      <template v-slot:footer>
+        <select v-model="settings_list" @change="getSettingsByFeeder" class="input-field">
+          <option v-for="feeder in feeders" v-bind:value="feeder">{{ feeder.name }}</option>
+        </select>
+        <span>Размер порции</span><input v-model="size" class="input-field"/>
+        <span>Часовой пояс</span><input v-model="timezone" class="input-field"/>
+        <span>Расписание</span><button @click="addTime()" class="btn btn-sm btn-primary">+</button>
+        
+        <div v-for="(schedule_item, index) in schedule" :key="index" class="nested-list">
+          <div v-for="(item, item_index) in schedule_item" :key="item_index">
+            <input v-model="schedule_item[item_index]" class="input-field">
+          </div>
+          <button @click="deleteTime(index)" class="btn btn-sm btn-danger">-</button>
+        </div>
+        
+        <button class="modal-footer__button" @click="updateSettings(settings_list.id)">Отправить</button>
+      </template>
+    </modal-window>
 
-<div>
-      <h3>Лотки <button class="btn btn-danger btn-sm" @click="showModalLitter()">Новый лоток</button>
-      <button class="btn btn-danger btn-sm" @click="showModalLitterCollar()">Новый ошейник</button>
-      </h3>
-          <modal-window ref="modal_litter">
-            <template v-slot:title>
-                <h3 class="modal-title">Добавить лоток</h3>
-            </template>
-            <template v-slot:footer>
-                <input v-model="name" placeholder="Имя" />
-                <button class="modal-footer__button" @click="addLitter()">Отправить</button>
-            </template>
-        </modal-window>
-        <modal-window ref="modal_litter_collar">
-            <template v-slot:title>
-                <h3 class="modal-title">Добавить ошейник</h3>
-            </template>
-            <template v-slot:footer>
-              <select v-model="litter_name">
-                <option v-for="litter in litters" v-bind:value="litter">{{ litter.name }}</option>
-              </select>
-              <input v-model="name" placeholder="Имя" />
-              <button class="modal-footer__button" @click="addCollar('litter', litter_name.id)">Отправить</button>
-            </template>
-        </modal-window>
-        <ul class="list-group mt-4">
-          <li v-for="litter in litters" :key="litter.id" class="list-group-item d-flex justify-content-between align-items-center">
-            <span>
-              {{ litter.name }}
-            </span>
-            <button @click="deleteLitter(litter.id)" class="btn btn-danger btn-sm">✖️</button>
-                    <ul class="list-group mt-4">
-          <li v-for="collar in litter.collars" :key="collar.id" class="list-group-item d-flex justify-content-between align-items-center">
-          <span>
-            {{ collar.name }}
-          </span>
-          <button @click="deleteCollar(collar.id, 'litter')" class="btn btn-danger btn-sm">✖️</button>
-        </li>
-      </ul>
+    <ul class="list-group mt-4">
+      <li v-for="feeder in feeders" :key="feeder.id" class="list-group-item">
+        <div class="device-header">
+          <span>{{ feeder.name }}</span>
+          <button @click="deleteFeeder(feeder.id)" class="btn btn-danger btn-sm">✖️</button>
+        </div>
+        <ul class="nested-list">
+          <li v-for="collar in feeder.collars" :key="collar.id" class="list-group-item nested-item">
+            <span>{{ collar.name }}</span>
+            <button @click="deleteCollar(collar.id, 'feeder')" class="btn btn-danger btn-sm">✖️</button>
           </li>
         </ul>
-        
-</div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="container">
+    <h3>Лотки 
+      <button class="btn btn-danger btn-sm" @click="showModalLitter()">Новый лоток</button>
+      <button class="btn btn-danger btn-sm" @click="showModalLitterCollar()">Новый ошейник</button>
+    </h3>
+
+    <modal-window ref="modal_litter">
+      <template v-slot:title>
+        <h3 class="modal-title">Добавить лоток</h3>
+      </template>
+      <template v-slot:footer>
+        <input v-model="name" placeholder="Имя" class="input-field"/>
+        <button class="modal-footer__button" @click="addLitter()">Отправить</button>
+      </template>
+    </modal-window>
+    
+    <modal-window ref="modal_litter_collar">
+      <template v-slot:title>
+        <h3 class="modal-title">Добавить ошейник</h3>
+      </template>
+      <template v-slot:footer>
+        <select v-model="litter_name" class="input-field">
+          <option v-for="litter in litters" v-bind:value="litter">{{ litter.name }}</option>
+        </select>
+        <input v-model="name" placeholder="Имя" class="input-field"/>
+        <button class="modal-footer__button" @click="addCollar('litter', litter_name.id)">Отправить</button>
+      </template>
+    </modal-window>
+
+    <ul class="list-group mt-4">
+      <li v-for="litter in litters" :key="litter.id" class="list-group-item">
+        <div class="device-header">
+          <span>{{ litter.name }}</span>
+          <button @click="deleteLitter(litter.id)" class="btn btn-danger btn-sm">✖️</button>
+        </div>
+        <ul class="nested-list">
+          <li v-for="collar in litter.collars" :key="collar.id" class="list-group-item nested-item">
+            <span>{{ collar.name }}</span>
+            <button @click="deleteCollar(collar.id, 'litter')" class="btn btn-danger btn-sm">✖️</button>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
 </template>
+
+<style scoped>
+.container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.modal-footer__button {
+  width: 100%;
+  padding: 10px;
+  background-color: #a9bdb9;
+  color: #2c3e50;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.modal-footer__button:hover {
+  background-color:rgb(127, 145, 141);
+}
+
+.list-group {
+  margin-top: 10px;
+  padding: 0;
+}
+
+.list-group-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 5px;
+}
+
+.device-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.nested-list {
+  margin-top: 5px;
+  padding-left: 20px;
+}
+
+.nested-item {
+  background: #f1f1f1;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+</style>
 
 <script>
 import axios from "axios";
@@ -280,3 +364,4 @@ export default {
   },
 };
 </script>
+
