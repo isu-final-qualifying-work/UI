@@ -38,6 +38,8 @@ router.beforeEach((to, from, next) => {
           const token = window.localStorage.getItem('token')
           if (!token) {
               next('/login')
+              localStorage.removeItem('token')
+              localStorage.removeItem('name')
           } else {
               next()
           }

@@ -13,12 +13,14 @@
         <button type="submit" class="btn btn-primary">Войти</button>
       </form>
     </div>
-  </template>
+</template>
 
-  <script>
+<script>
+
   import axios from 'axios';
   
   export default {
+    
     name: 'UserLogin',
     data() {
       return {
@@ -34,6 +36,7 @@
             password: this.password
           });
           localStorage.setItem('token', response.data.access_token);
+          localStorage.setItem('name', this.name);
           this.$router.push('/');
         } catch (error) {
           console.error(error);

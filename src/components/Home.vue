@@ -1,4 +1,7 @@
 <template>
+
+  <BarChart />
+<h3>Добро пожаловать, {{ this.username }}</h3>
   <div class="container">
     <h3>Кормушки  
       <button class="btn btn-danger btn-sm" @click="showModalFeeder()">Новая кормушка</button>
@@ -24,7 +27,21 @@
         <select v-model="feeder_name" class="input-field">
           <option v-for="feeder in feeders" v-bind:value="feeder">{{ feeder.name }}</option>
         </select>
-        <input v-model="name" placeholder="Имя" class="input-field"/>
+        <input v-model="name" placeholder="Ошейник" class="input-field"/>
+        <input v-model="pet_name" placeholder="Имя питомца" class="input-field"/>
+        <input type="radio" id="m" value="M" v-model="gender" />
+        <label for="m">Самец</label>
+        <input type="radio" id="f" value="F" v-model="gender" />
+        <label for="f">Самка</label>
+        <input type="checkbox" id="checkbox" v-model="kitten" />
+        <label for="kitten">Котёнок</label>
+        <div v-if="!kitten">
+          <input v-model="weight" placeholder="Вес" class="input-field"/>
+          <input type="checkbox" id="checkbox" v-model="pregnant" />
+          <label for="pregnant">Беременность</label>
+          <input type="checkbox" id="checkbox" v-model="sterilized" />
+          <label for="sterilized">Стерилизация</label>
+        </div>
         <button class="modal-footer__button" @click="addCollar('feeder', feeder_name.id)">Отправить</button>
       </template>
     </modal-window>
@@ -61,6 +78,7 @@
         <ul class="nested-list">
           <li v-for="collar in feeder.collars" :key="collar.id" class="list-group-item nested-item">
             <span>{{ collar.name }}</span>
+            <button @click="deleteCollar(collar.id, 'feeder')" class="btn btn-danger btn-sm">Настройки</button>
             <button @click="deleteCollar(collar.id, 'feeder')" class="btn btn-danger btn-sm">✖️</button>
           </li>
         </ul>
@@ -92,7 +110,20 @@
         <select v-model="litter_name" class="input-field">
           <option v-for="litter in litters" v-bind:value="litter">{{ litter.name }}</option>
         </select>
-        <input v-model="name" placeholder="Имя" class="input-field"/>
+        <input v-model="pet_name" placeholder="Имя питомца" class="input-field"/>
+        <input type="radio" id="m" value="M" v-model="gender" />
+        <label for="m">Самец</label>
+        <input type="radio" id="f" value="F" v-model="gender" />
+        <label for="f">Самка</label>
+        <input type="checkbox" id="checkbox" v-model="kitten" />
+        <label for="kitten">Котёнок</label>
+        <div v-if="!kitten">
+          <input v-model="weight" placeholder="Вес" class="input-field"/>
+          <input type="checkbox" id="checkbox" v-model="pregnant" />
+          <label for="pregnant">Беременность</label>
+          <input type="checkbox" id="checkbox" v-model="sterilized" />
+          <label for="sterilized">Стерилизация</label>
+        </div>
         <button class="modal-footer__button" @click="addCollar('litter', litter_name.id)">Отправить</button>
       </template>
     </modal-window>
@@ -112,9 +143,14 @@
       </li>
     </ul>
   </div>
+  
 </template>
 
 <style scoped>
+div, header, p, h1, h2, h3 {
+  font-family: "PT Sans", "Arial", sans-serif;
+}
+
 .container {
   max-width: 600px;
   margin: 20px auto;
@@ -177,6 +213,9 @@ h3 {
 }
 
 .nested-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   background: #f1f1f1;
   padding: 8px;
   border-radius: 4px;
@@ -195,15 +234,24 @@ h3 {
 
 <script>
 import axios from "axios";
+import BarChart from './Analitic.vue'
 import ModalWindow from './Modal.vue'
-export default {
+export default {    
   name: "Home",
   components: {
+            BarChart,
             ModalWindow
         },
   data() {
     return {
+      username: localStorage.getItem('name'),
       name: '',
+      pet_name: '',
+      gender: '',
+      kitten: true,
+      pregnant: false,
+      sterilized: false,
+      weight: 0,
       feeder_name: {},
       litter_name: {},
       settings_list: {},
@@ -215,6 +263,9 @@ export default {
     };
   },
   methods: {
+    fullPetList(event) {
+      this.$refs.full_pet_list.show = false
+    },
     getSettingsByFeeder(event) {
       //console.log(this.settings_list)
       this.size = this.settings_list.size
@@ -301,7 +352,15 @@ export default {
     await axios.post('http://localhost:8000/collar/add_collar', {
       name: this.name,
       device_id: device_id,
-      device_type: device_type
+      device_type: device_type,
+      access_token: localStorage.getItem('token'),
+      token_type: "bearer",
+      pet_name: this.pet_name,
+      gender: this.gender,
+      kitten: this.kitten,
+      pregnant: this.pregnant,
+      sterilized: this.sterilized,
+      weight: this.weight,      
     });
     
   this.name = "";
