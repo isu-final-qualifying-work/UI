@@ -3,7 +3,10 @@
 <h3>Добро пожаловать, {{ this.username }}</h3>
       <button class="btn btn-danger btn-sm" @click="showModalCharts()">Аналитика</button>
     <modal-window ref="modal_charts">
+          <template v-slot:footer>
+
       <BarChart />
+      </template>
     </modal-window>
   <div class="container">
     <h3>Кормушки  
