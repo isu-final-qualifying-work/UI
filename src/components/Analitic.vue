@@ -1,12 +1,11 @@
 <template>
   <div class="container">
-    <h3>Статистика кормления</h3>
 
     <div class="filters">
-      <label for="collar">Питомец:</label>
-      <select v-model="selectedCollar" @change="fetchData">
-        <option v-for="collar in collars" :key="collar.id" :value="collar.id">
-          {{ collar.name }}
+      <label for="pet">Питомец:</label>
+      <select v-model="selectedPet" @change="fetchData">
+        <option v-for="pet in pets" :key="pet.id" :value="pet.id">
+          {{ pet.name }}
         </option>
       </select>
 
@@ -19,7 +18,12 @@
       </select>
     </div>
 
-    <BarChart :chart-data="chartData" />
+    <h3>Статистика кормления</h3>
+    <BarChart :chart-data="eatingChartData" />
+    <h3 style="margin-top: 40px;">Статистика посещения лотка</h3>
+    <BarChart :chart-data="litterChartData" />
+    <h3 style="margin-top: 40px;">Статистика шагов</h3>
+    <BarChart :chart-data="collarChartData" />
   </div>
 </template>
 
@@ -68,91 +72,142 @@ export default {
   components: {
     BarChart
   },
-  data() {
-    return {
-      collars: [],
-      selectedCollar: null,
-      filter: 'all',
-      chartData: {
-        labels: [],
-        datasets: [
-          {
-            label: 'Размер порции',
-            backgroundColor: '#42A5F5',
-            data: []
-          }
-        ]
-      }
+data() {
+  return {
+    pets: [],
+    selectedPet: null,
+    filter: 'all',
+    eatingChartData: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Размер порции',
+          backgroundColor: '#42A5F5',
+          data: []
+        }
+      ]
+    },
+    litterChartData: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Количество посещений',
+          backgroundColor: '#66BB6A',
+          data: []
+        }
+      ]
+    },
+    collarChartData: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Количество шагов',
+          backgroundColor: '#FFA726',
+          data: []
+        }
+      ]
     }
-  },
+  }
+},
   methods: {
-    async fetchCollars() {
+    async fetchPets() {
       try {
         const response = await axios.post('http://localhost:8000/pet/get_pets_by_user', {
           access_token: localStorage.getItem('token'),
           token_type: 'bearer'
         })
-        this.collars = response.data
-        if (this.collars.length > 0) {
-          this.selectedCollar = this.collars[0].id
+        this.pets = response.data
+        if (this.pets.length > 0) {
+          this.selectedCollar = this.pets[0].id
           this.fetchData()
         }
       } catch (error) {
-        console.error('Ошибка при получении ошейников:', error)
+        console.error('Ошибка при получении животных:', error)
       }
     },
 
-    // Функция для получения меток
     getLabels(data) {
-      // Убедимся, что data является массивом и что каждый элемент имеет datetime
       return data.map(item => {
         if (item.datetime) {
-          // Преобразуем в строку, если datetime существует
-          return new Date(item.datetime).toLocaleDateString(); // или используйте любой формат, который вам нужен
+          return new Date(item.datetime).toLocaleDateString(); 
+        }         else if (item.day) {
+          return new Date(item.day).toLocaleDateString(); 
+        }         else if (item.month) {
+          return new Date(item.month).toLocaleDateString(); 
+        }         else if (item.year) {
+          return new Date(item.year).toLocaleDateString(); 
         } else {
-          return 'Неизвестно'; // Возвращаем дефолтное значение для случая отсутствия даты
+          return 'Неизвестно'; 
         }
       });
     },
 
-    // Функция для получения размеров порций
     getSizes(data) {
       return data.map(item => {
-        return item.size || 0; // Если size отсутствует, вернем 0
+        return item.size || 0; 
       });
     },
+getCounts(data) {
+  return data.map(item => item.count || 1); 
+},
+async fetchData() {
+  if (!this.selectedPet) return;
+  try {
+    const eatingResponse = await axios.post('http://localhost:8000/analitic/get_eating_activity', {
+      pet_id: this.selectedPet,
+      type: this.filter
+    });
+    const eatingData = eatingResponse.data;
 
-    // Загрузка данных
-    async fetchData() {
-      if (!this.selectedCollar) return;
-      try {
-        console.log("Fetching data...");
-        const response = await axios.post('http://localhost:8000/analitic/get_eating_activity', {
-          pet_id: this.selectedCollar,
-          type: this.filter
-        });
-        const data = response.data;
-        console.log("Received data:", data);  // Печать полученных данных
+    this.eatingChartData = {
+      labels: this.getLabels(eatingData),
+      datasets: [
+        {
+          label: 'Размер порции',
+          backgroundColor: '#42A5F5',
+          data: this.getSizes(eatingData)
+        }
+      ]
+    };
 
-        this.chartData = {
-          labels: this.getLabels(data),  // Получаем метки
-          datasets: [
-            {
-              label: 'Размер порции',
-              backgroundColor: '#42A5F5',
-              data: this.getSizes(data)  // Получаем размеры
-            }
-          ]
-        };
+    const litterResponse = await axios.post('http://localhost:8000/analitic/get_litter_clean_activity', {
+      pet_id: this.selectedPet,
+      type: this.filter
+    });
+    const litterData = litterResponse.data;
 
-        console.log("Chart data:", this.chartData);  // Проверка формата chartData
-      } catch (error) {
-        console.error('Ошибка при получении данных:', error);
-      }
-    }
+    this.litterChartData = {
+      labels: this.getLabels(litterData),
+      datasets: [
+        {
+          label: 'Количество посещений',
+          backgroundColor: '#66BB6A',
+          data: this.getCounts(litterData)
+        }
+      ]
+    };
+    const collarResponse = await axios.post('http://localhost:8000/analitic/get_collar_activity', {
+      pet_id: this.selectedPet,
+      type: this.filter
+    });
+    const collarData = collarResponse.data;
+    this.collarChartData = {
+      labels: this.getLabels(collarData),
+      datasets: [
+        {
+          label: 'Количество шагов',
+          backgroundColor: '#FFA726',
+          data: this.getCounts(collarData)
+        }
+      ]
+    };
+  } catch (error) {
+    console.error('Ошибка при получении данных:', error);
+  }
+},
   },
   mounted() {
-    this.fetchCollars()
+    this.fetchPets()
   }
 }
 </script>

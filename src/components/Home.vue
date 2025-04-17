@@ -1,7 +1,10 @@
 <template>
 
-  <BarChart />
 <h3>Добро пожаловать, {{ this.username }}</h3>
+      <button class="btn btn-danger btn-sm" @click="showModalCharts()">Аналитика</button>
+    <modal-window ref="modal_charts">
+      <BarChart />
+    </modal-window>
   <div class="container">
     <h3>Кормушки  
       <button class="btn btn-danger btn-sm" @click="showModalFeeder()">Новая кормушка</button>
@@ -280,6 +283,9 @@ export default {
                 this.schedule.splice(index, 1)
                 
                 console.log(this.schedule)
+            },
+    async showModalCharts() {
+                this.$refs.modal_charts.show = true
             },
     async showModalFeeder() {
                 this.$refs.modal_feeder.show = true
