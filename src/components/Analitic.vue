@@ -11,7 +11,6 @@
 
       <label for="filter">Фильтр:</label>
       <select v-model="filter" @change="fetchData">
-        <option value="all">Все</option>
         <option value="day">По дням</option>
         <option value="month">По месяцам</option>
         <option value="year">По годам</option>
@@ -76,7 +75,7 @@ data() {
   return {
     pets: [],
     selectedPet: null,
-    filter: 'all',
+    filter: 'day',
     eatingChartData: {
       labels: [],
       datasets: [
@@ -118,7 +117,7 @@ data() {
         })
         this.pets = response.data
         if (this.pets.length > 0) {
-          this.selectedCollar = this.pets[0].id
+          this.selectedpet = this.pets[0].id
           this.fetchData()
         }
       } catch (error) {
@@ -127,15 +126,14 @@ data() {
     },
 
     getLabels(data) {
+      console.log(data)
       return data.map(item => {
-        if (item.datetime) {
-          return new Date(item.datetime).toLocaleDateString(); 
-        }         else if (item.day) {
+        if (item.day) {
           return new Date(item.day).toLocaleDateString(); 
         }         else if (item.month) {
-          return new Date(item.month).toLocaleDateString(); 
+          return String(item.month)+"."+item.year; 
         }         else if (item.year) {
-          return new Date(item.year).toLocaleDateString(); 
+          return item.year; 
         } else {
           return 'Неизвестно'; 
         }

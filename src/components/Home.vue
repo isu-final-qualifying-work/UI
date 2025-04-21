@@ -117,6 +117,10 @@
           <option v-for="litter in litters" v-bind:value="litter">{{ litter.name }}</option>
         </select>
         <input v-model="pet_name" placeholder="Имя питомца" class="input-field"/>
+        <input type="radio" id="cat" value="cat" v-model="type" />
+        <label for="m">Кошка</label>
+        <input type="radio" id="dog" value="dog" v-model="type" />
+        <label for="f">Собака</label>
         <input type="radio" id="m" value="M" v-model="gender" />
         <label for="m">Самец</label>
         <input type="radio" id="f" value="F" v-model="gender" />
@@ -254,7 +258,8 @@ export default {
       name: '',
       pet_name: '',
       gender: '',
-      kitten: true,
+      child: true,
+      type: '',
       pregnant: false,
       sterilized: false,
       weight: 0,
@@ -364,9 +369,10 @@ export default {
       device_type: device_type,
       access_token: localStorage.getItem('token'),
       token_type: "bearer",
+      type: this.type
       pet_name: this.pet_name,
       gender: this.gender,
-      kitten: this.kitten,
+      child: this.kitten,
       pregnant: this.pregnant,
       sterilized: this.sterilized,
       weight: this.weight,      
