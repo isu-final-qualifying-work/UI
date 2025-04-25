@@ -1,6 +1,6 @@
 <template>
 
-<h3>Добро пожаловать, {{ this.username }}</h3>
+<h3>Добро пожаловать, {{ this.username }} <button class="btn btn-danger btn-sm" @click="logout()">Выйти</button></h3>
       <button class="btn btn-danger btn-sm" @click="showModalCharts()">Аналитика</button>
     <modal-window ref="modal_charts">
           <template v-slot:footer>
@@ -35,14 +35,18 @@
         </select>
         <input v-model="name" placeholder="Ошейник" class="input-field"/>
         <input v-model="pet_name" placeholder="Имя питомца" class="input-field"/>
+        <input type="radio" id="dog" value="dog" v-model="type" />
+        <label for="dog">Собака</label>
+        <input type="radio" id="cat" value="cat" v-model="type" />
+        <label for="cat">Кошка</label>
         <input type="radio" id="m" value="M" v-model="gender" />
         <label for="m">Самец</label>
         <input type="radio" id="f" value="F" v-model="gender" />
         <label for="f">Самка</label>
-        <input type="checkbox" id="checkbox" v-model="kitten" />
-        <label for="kitten">Котёнок</label>
-        <div v-if="!kitten">
-          <input v-model="weight" placeholder="Вес" class="input-field"/>
+        <input type="checkbox" id="checkbox" v-model="child" />
+        <label for="child">Ребёнок</label>
+        <input v-model="weight" placeholder="Вес" class="input-field"/>
+        <div v-if="!child">
           <input type="checkbox" id="checkbox" v-model="pregnant" />
           <label for="pregnant">Беременность</label>
           <input type="checkbox" id="checkbox" v-model="sterilized" />
@@ -74,7 +78,32 @@
         <button class="modal-footer__button" @click="updateSettings(settings_list.id)">Отправить</button>
       </template>
     </modal-window>
-
+    <modal-window ref="modal_pet">
+      <template v-slot:title>
+        <h3 class="modal-title">Настройки питомца</h3>
+      </template>
+      <template v-slot:footer>
+        <input v-model="pet_name" placeholder="Имя питомца" class="input-field"/>
+        <input type="radio" id="cat" value="cat" v-model="type" />
+        <label for="cat">Кошка</label>
+        <input type="radio" id="dog" value="dog" v-model="type" />
+        <label for="dog">Собака</label>
+        <input type="radio" id="m" value="M" v-model="gender" />
+        <label for="m">Самец</label>
+        <input type="radio" id="f" value="F" v-model="gender" />
+        <label for="f">Самка</label>
+        <input type="checkbox" id="checkbox" v-model="child" />
+        <label for="child">Ребёнок</label>
+        <input v-model="weight" placeholder="Вес" class="input-field"/>
+        <div v-if="!child">
+          <input type="checkbox" id="checkbox" v-model="pregnant" />
+          <label for="pregnant">Беременность</label>
+          <input type="checkbox" id="checkbox" v-model="sterilized" />
+          <label for="sterilized">Стерилизация</label>
+        </div>
+        <button class="modal-footer__button" @click="addCollar('litter', litter_name.id)">Отправить</button>
+      </template>
+    </modal-window>
     <ul class="list-group mt-4">
       <li v-for="feeder in feeders" :key="feeder.id" class="list-group-item">
         <div class="device-header">
@@ -84,7 +113,7 @@
         <ul class="nested-list">
           <li v-for="collar in feeder.collars" :key="collar.id" class="list-group-item nested-item">
             <span>{{ collar.name }}</span>
-            <button @click="deleteCollar(collar.id, 'feeder')" class="btn btn-danger btn-sm">Настройки</button>
+            <button @click="getPetData(collar.id)" class="btn btn-danger btn-sm">Настройки</button>
             <button @click="deleteCollar(collar.id, 'feeder')" class="btn btn-danger btn-sm">✖️</button>
           </li>
         </ul>
@@ -116,19 +145,20 @@
         <select v-model="litter_name" class="input-field">
           <option v-for="litter in litters" v-bind:value="litter">{{ litter.name }}</option>
         </select>
+        <input v-model="name" placeholder="Ошейник" class="input-field"/>
         <input v-model="pet_name" placeholder="Имя питомца" class="input-field"/>
         <input type="radio" id="cat" value="cat" v-model="type" />
-        <label for="m">Кошка</label>
+        <label for="cat">Кошка</label>
         <input type="radio" id="dog" value="dog" v-model="type" />
-        <label for="f">Собака</label>
+        <label for="dog">Собака</label>
         <input type="radio" id="m" value="M" v-model="gender" />
         <label for="m">Самец</label>
         <input type="radio" id="f" value="F" v-model="gender" />
         <label for="f">Самка</label>
-        <input type="checkbox" id="checkbox" v-model="kitten" />
-        <label for="kitten">Котёнок</label>
-        <div v-if="!kitten">
-          <input v-model="weight" placeholder="Вес" class="input-field"/>
+        <input type="checkbox" id="checkbox" v-model="child" />
+        <label for="child">Ребёнок</label>
+        <input v-model="weight" placeholder="Вес" class="input-field"/>
+        <div v-if="!child">
           <input type="checkbox" id="checkbox" v-model="pregnant" />
           <label for="pregnant">Беременность</label>
           <input type="checkbox" id="checkbox" v-model="sterilized" />
@@ -147,6 +177,7 @@
         <ul class="nested-list">
           <li v-for="collar in litter.collars" :key="collar.id" class="list-group-item nested-item">
             <span>{{ collar.name }}</span>
+            <button @click="getPetData(collar.id)" class="btn btn-danger btn-sm">Настройки</button>
             <button @click="deleteCollar(collar.id, 'litter')" class="btn btn-danger btn-sm">✖️</button>
           </li>
         </ul>
@@ -310,12 +341,48 @@ export default {
     async showModalSettings() {
                 this.$refs.modal_settings.show = true
             },
+    async logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('name');
+        window.location.href = '/login';
+    },
+    async getPetData(collar_id){
+      const response = await axios.post("http://localhost:8000/pet/get_pet",
+      {
+        id: collar_id
+      });
+      this.pet_name = response.data.name
+      this.gender = response.data.gender
+      this.child = response.data.is_child
+      this.type = response.data.type
+      this.pregnant = response.data.is_pregnant
+      this.sterilized = response.data.is_sterilized
+      this.weight = response.data.weight
+      this.$refs.modal_pet.show = true
+    },
+    async updatePet(collar_id){
+      const response = await axios.post("http://localhost:8000/pet/update_pet",
+      {
+        name: this.pet_name,
+        gender: this.gender,
+        type: this.type,
+        is_child: this.child,
+        weight: this.weight,
+        is_pregnant: this.pregnant,
+        is_sterilized: this.sterilized,
+        collar_id: collar_id
+      });
+      this.$refs.modal_pet.show = false
+    },
     async getFeeders() {
       const response = await axios.post("http://localhost:8000/feeder/get_feeders_by_user",
       {
         access_token: localStorage.getItem('token'),
         token_type: "bearer"
       });
+      if(response.data.message){
+        logout();
+      }
       console.log(response.data);
       this.feeders = response.data;
     },
@@ -325,6 +392,9 @@ export default {
         access_token: localStorage.getItem('token'),
         token_type: "bearer"
       });
+      if(response.data.message){
+        logout();
+      }
       console.log(response.data);
       this.litters = response.data;
     },
@@ -369,10 +439,10 @@ export default {
       device_type: device_type,
       access_token: localStorage.getItem('token'),
       token_type: "bearer",
-      type: this.type
       pet_name: this.pet_name,
       gender: this.gender,
-      child: this.kitten,
+      type: this.type,
+      child: this.child,
       pregnant: this.pregnant,
       sterilized: this.sterilized,
       weight: this.weight,      

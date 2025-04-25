@@ -3,8 +3,8 @@
       <h2>Вход</h2>
       <form @submit.prevent="login">
         <div class="form-group">
-          <label for="name">Имя: </label>
-          <input type="text" id="name" v-model="name" class="form-control">
+          <label for="email">Почта: </label>
+          <input type="text" id="email" v-model="email" class="form-control">
         </div>
         <div class="form-group">
           <label for="password">Пароль: </label>
@@ -24,7 +24,7 @@
     name: 'UserLogin',
     data() {
       return {
-        name: '',
+        email: '',
         password: ''
       };
     },
@@ -32,11 +32,11 @@
       async login() {
         try {
           const response = await axios.post('http://localhost:8000/token', {
-            name: this.name,
+            email: this.email,
             password: this.password
           });
           localStorage.setItem('token', response.data.access_token);
-          localStorage.setItem('name', this.name);
+          localStorage.setItem('name', response.data.name);
           this.$router.push('/');
         } catch (error) {
           console.error(error);

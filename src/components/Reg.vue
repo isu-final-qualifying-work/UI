@@ -7,6 +7,10 @@
           <input type="text" id="name" v-model="name" class="form-control">
         </div>
         <div class="form-group">
+          <label for="email">Почта: </label>
+          <input type="text" id="email" v-model="email" class="form-control">
+        </div>
+        <div class="form-group">
           <label for="password">Пароль: </label>
           <input type="password" id="password" v-model="password" class="form-control">
         </div>
@@ -23,6 +27,7 @@
     data() {
       return {
         name: '',
+        email: '',
         password: ''
       };
     },
@@ -31,6 +36,7 @@
         try {
           const response = await axios.post('http://localhost:8000/register', {
             name: this.name,
+            email: this.email,
             password: this.password
           }, {
             headers: {
@@ -38,6 +44,7 @@
             }
           });
           localStorage.setItem('token', response.data.access_token);
+          localStorage.setItem('name', this.name);
           this.$router.push('/');
         } catch (error) {
           console.error(error);

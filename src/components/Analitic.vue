@@ -11,12 +11,14 @@
 
       <label for="filter">Фильтр:</label>
       <select v-model="filter" @change="fetchData">
-        <option value="day">По дням</option>
-        <option value="month">По месяцам</option>
-        <option value="year">По годам</option>
+        <option value="day">За прошедший день</option>
+        <option value="week">За 7 дней</option>
+        <option value="month">За 30 дней</option>
       </select>
     </div>
-
+    <ul v-for="message in messages">
+        <li>{{ message }}</li>
+    </ul>
     <h3>Статистика кормления</h3>
     <BarChart :chart-data="eatingChartData" />
     <h3 style="margin-top: 40px;">Статистика посещения лотка</h3>
@@ -76,6 +78,7 @@ data() {
     pets: [],
     selectedPet: null,
     filter: 'day',
+    messages: [],
     eatingChartData: {
       labels: [],
       datasets: [
@@ -130,11 +133,8 @@ data() {
       return data.map(item => {
         if (item.day) {
           return new Date(item.day).toLocaleDateString(); 
-        }         else if (item.month) {
-          return String(item.month)+"."+item.year; 
-        }         else if (item.year) {
-          return item.year; 
-        } else {
+        }
+        else {
           return 'Неизвестно'; 
         }
       });
@@ -199,6 +199,11 @@ async fetchData() {
         }
       ]
     };
+    const messegesResponse = await axios.post('http://localhost:8000/analitic/check_references', {
+      pet_id: this.selectedPet,
+      type: this.filter
+    });
+    this.messages = messegesResponse.data;
   } catch (error) {
     console.error('Ошибка при получении данных:', error);
   }
